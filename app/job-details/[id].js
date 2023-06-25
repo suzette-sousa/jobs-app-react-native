@@ -26,9 +26,7 @@ const JobDetails = () => {
   const params = useSearchParams();
   const router = useRouter();
 
-  const { data, isLoading, error, refetch } = useFetch('job-details', {
-    job_id: params.id,
-  });
+  const { data, isLoading, error, refetch } = useFetch(params?.id);
 
   const [refreshing, setRefreshing] = useState(false);
   const [activeTab, setActiveTab] = useState(tabs[0]);
@@ -38,23 +36,23 @@ const JobDetails = () => {
   const displayTabContent = () => {
     switch (activeTab) {
       case 'À propos':
-        return <JobAbout info={data[0].job_description ?? ['N/A']} />;
+        return <JobAbout info={data?.description ?? ['N/A']} />;
 
       case 'Compétences':
         return (
           <Specifics
             title={'Compétences'}
-            points={data[0].job_highlights?.Qualifications ?? ['N/A']}
+            points={data?.competences ?? ['N/A']}
           />
         );
 
-      case 'Responsabilités':
+      /*       case 'Responsabilités':
         return (
           <Specifics
             title={'Responsabilités'}
-            points={data[0].job_highlights?.Responsibilities ?? ['N/A']}
+            points={data?.competences ?? ['N/A']}
           />
-        );
+        ); */
 
       default:
         break;
@@ -92,15 +90,15 @@ const JobDetails = () => {
             <ActivityIndicator size="large" color={COLORS.primary} />
           ) : error ? (
             <Text>Quelque chose s'est mal passé</Text>
-          ) : data.length === 0 ? (
+          ) : data?.length === 0 ? (
             <Text>Pas de données</Text>
           ) : (
             <View style={{ padding: SIZES.medium, paddingBottom: 100 }}>
               <Company
-                companyLogo={data[0].employer_logo}
-                jobTitle={data[0].job_title}
-                companyName={data[0].employer_name}
-                location={data[0].job_country}
+                companyLogo={data?.entreprise?.logo}
+                jobTitle={data?.intitule}
+                companyName={data?.entreprise.nom}
+                location={data?.lieuTravail?.libelle}
               />
 
               <JobTabs

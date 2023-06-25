@@ -17,8 +17,9 @@ const Popularjobs = () => {
   const router = useRouter();
 
   const { data, isLoading, error } = useFetch('search', {
-    query: 'React developer',
-    num_pages: '1',
+    sort: 1,
+    range: '1-5',
+    /*     num_pages: '1', */
   });
 
   return (
@@ -39,7 +40,7 @@ const Popularjobs = () => {
           <FlatList
             data={data}
             renderItem={({ item }) => <PopularJobCard item={item} />}
-            keyExtractor={(item) => item?.job_id}
+            keyExtractor={(item) => item?.id}
             contentContainerStyle={{ columnGap: SIZES.medium }}
             horizontal
           />

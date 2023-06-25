@@ -1,36 +1,51 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { RAPID_API_KEY } from '@env';
-
-const rapidApiKey = RAPID_API_KEY;
+import config_pe from '../config-pe.json';
 
 const useFetch = (endpoint, query) => {
   const [data, setData] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const options = {
-    method: 'GET',
-    url: `https://jsearch.p.rapidapi.com/${endpoint}`,
-    headers: {
-      'X-RapidAPI-Key': `${rapidApiKey}`,
-      'X-RapidAPI-Host': 'jsearch.p.rapidapi.com',
-    },
-    params: { ...query },
-  };
+  let url =
+    'https://entreprise.pole-emploi.fr/connexion/oauth2/access_token?realm=/partenaire';
 
+  //TODO: TO IMPROVE
   const fetchData = async () => {
-    setIsLoading(true);
-
     try {
-      const response = await axios.request(options);
-      setData(response.data.data);
-      setIsLoading(false);
+      await axios({
+        method: 'post',
+        url,
+        data: config_pe,
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      })
+        .then((response) => {
+          setIsLoading(true);
+          try {
+            const options = {
+              method: 'GET',
+              url: `https://api.pole-emploi.io/partenaire/offresdemploi/v2/offres/${endpoint}`,
+              headers: {
+                Authorization: `Bearer ${response.data.access_token}`,
+              },
+              params: { ...query },
+            };
+
+            axios.request(options).then((response) => {
+              setData(query ? response.data.resultats : response.data);
+              setIsLoading(false);
+            });
+          } catch (error) {
+            setError(error);
+          } finally {
+            setIsLoading(false);
+          }
+        })
+        .catch((error) => {
+          setError(error);
+        });
     } catch (error) {
       setError(error);
-      console.log(error);
-    } finally {
-      setIsLoading(false);
     }
   };
 

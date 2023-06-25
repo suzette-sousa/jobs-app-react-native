@@ -10,8 +10,9 @@ const Nearbyjobs = () => {
   const router = useRouter();
 
   const { data, isLoading, error } = useFetch('search', {
-    query: 'React developer',
-    num_pages: '1',
+    sort: '2',
+    range: '1-5',
+    commune: '51230',
   });
 
   return (
@@ -32,8 +33,8 @@ const Nearbyjobs = () => {
           data?.map((job) => (
             <NearbyJobCard
               job={job}
-              key={`nearby-job-${job?.job_id}`}
-              handleNavigate={() => router.push(`/job-details/${job?.job_id}`)}
+              key={`nearby-job-${job?.id}`}
+              handleNavigate={() => router.push(`/job-details/${job?.id}`)}
             />
           ))
         )}
