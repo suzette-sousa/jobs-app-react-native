@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   Text,
   View,
@@ -31,7 +31,15 @@ const JobDetails = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [activeTab, setActiveTab] = useState(tabs[0]);
 
-  const onRefresh = () => {};
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    refetch();
+    setRefreshing(false);
+  }, []);
+
+  useEffect(() => {
+    refetch();
+  }, [params]);
 
   const displayTabContent = () => {
     switch (activeTab) {
@@ -94,20 +102,22 @@ const JobDetails = () => {
             <Text>Pas de données</Text>
           ) : (
             <View style={{ padding: SIZES.medium, paddingBottom: 100 }}>
-              <Company
-                companyLogo={data?.entreprise?.logo}
-                jobTitle={data?.intitule}
-                companyName={data?.entreprise.nom}
-                location={data?.lieuTravail?.libelle}
-              />
-
-              <JobTabs
-                tabs={tabs}
-                activeTab={activeTab}
-                setActiveTab={setActiveTab}
-              />
-
-              {displayTabContent()}
+              {data?.length !== 0 && (
+                <>
+                  <Company
+                    companyLogo={data?.entreprise?.logo}
+                    jobTitle={data?.intitule}
+                    companyName={data?.entreprise.nom}
+                    location={data?.lieuTravail?.libelle}
+                  />
+                  <JobTabs
+                    tabs={tabs}
+                    activeTab={activeTab}
+                    setActiveTab={setActiveTab}
+                  />
+                  {displayTabContent()}
+                </>
+              )}
             </View>
           )}
         </ScrollView>

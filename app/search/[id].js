@@ -23,12 +23,14 @@ const JobSearch = () => {
   const [searchResult, setSearchResult] = useState([]);
   const [searchLoader, setSearchLoader] = useState(false);
   const [searchError, setSearchError] = useState(null);
-  const [page, setPage] = useState(1);
+  const [page, setPage] = useState(10);
 
   let url =
     'https://entreprise.pole-emploi.fr/connexion/oauth2/access_token?realm=/partenaire';
 
   const handleSearch = async () => {
+    setSearchLoader(true);
+    setSearchResult([]);
     try {
       await axios({
         method: 'post',
@@ -37,8 +39,6 @@ const JobSearch = () => {
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       })
         .then((response) => {
-          setSearchLoader(true);
-          setSearchResult([]);
           try {
             const options = {
               method: 'GET',
@@ -46,7 +46,7 @@ const JobSearch = () => {
               headers: {
                 Authorization: `Bearer ${response.data.access_token}`,
               },
-              params: { motsCles: params.id, range: `${page}-${page + 10}` }, // TODO : adapt range
+              params: { motsCles: params?.id, range: `${page - 9}-${page}` },
             };
 
             axios.request(options).then((response) => {
@@ -69,17 +69,17 @@ const JobSearch = () => {
 
   const handlePagination = (direction) => {
     if (direction === 'left' && page > 1) {
-      setPage(page - 1);
+      setPage(page - 10);
       handleSearch();
     } else if (direction === 'right') {
-      setPage(page + 1);
+      setPage(page + 10);
       handleSearch();
     }
   };
 
   useEffect(() => {
-    handleSearch();
-  }, []);
+    if (params.id) handleSearch();
+  }, [params]);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.lightWhite }}>
@@ -111,44 +111,56 @@ const JobSearch = () => {
         ListHeaderComponent={() => (
           <>
             <View style={styles.container}>
+              <Text style={styles.noOfSearchedJobs}>
+                Votre recherche contenant le mot-clé :
+              </Text>
               <Text style={styles.searchTitle}>{params.id}</Text>
-              <Text style={styles.noOfSearchedJobs}>Job Opportunities</Text>
             </View>
             <View style={styles.loaderContainer}>
               {searchLoader ? (
                 <ActivityIndicator size="large" color={COLORS.primary} />
               ) : (
-                searchError && <Text>Oops something went wrong</Text>
+                searchError && <Text>Oups quelque chose s'est mal passé</Text>
               )}
             </View>
           </>
         )}
         ListFooterComponent={() => (
-          <View style={styles.footerContainer}>
-            <TouchableOpacity
-              style={styles.paginationButton}
-              onPress={() => handlePagination('left')}
-            >
-              <Image
-                source={icons.chevronLeft}
-                style={styles.paginationImage}
-                resizeMode="contain"
-              />
-            </TouchableOpacity>
-            <View style={styles.paginationTextBox}>
-              <Text style={styles.paginationText}>{page}</Text>
-            </View>
-            <TouchableOpacity
-              style={styles.paginationButton}
-              onPress={() => handlePagination('right')}
-            >
-              <Image
-                source={icons.chevronRight}
-                style={styles.paginationImage}
-                resizeMode="contain"
-              />
-            </TouchableOpacity>
-          </View>
+          <>
+            {searchResult?.length ? (
+              <View style={styles.footerContainer}>
+                <TouchableOpacity
+                  style={styles.paginationButton}
+                  onPress={() => handlePagination('left')}
+                >
+                  <Image
+                    source={icons.chevronLeft}
+                    style={styles.paginationImage}
+                    resizeMode="contain"
+                  />
+                </TouchableOpacity>
+                <View style={styles.paginationTextBox}>
+                  <Text style={styles.paginationText}>
+                    {page - 9}-{page}
+                  </Text>
+                </View>
+                <TouchableOpacity
+                  style={styles.paginationButton}
+                  onPress={() => handlePagination('right')}
+                >
+                  <Image
+                    source={icons.chevronRight}
+                    style={styles.paginationImage}
+                    resizeMode="contain"
+                  />
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <>
+                {!searchResult && !searchLoader && <Text>Aucun résultat</Text>}
+              </>
+            )}
+          </>
         )}
       />
     </SafeAreaView>
